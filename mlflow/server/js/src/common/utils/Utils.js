@@ -263,7 +263,8 @@ class Utils {
     const sourceType = Utils.getSourceType(tags);
     let res = Utils.formatSource(tags);
     if (sourceType === 'PROJECT') {
-      const url = Utils.getGitRepoUrl(sourceName);
+      // const url = Utils.getGitRepoUrl(sourceName);
+      const url = null;
       if (url) {
         res = (
           <a target='_top' href={url}>
@@ -430,7 +431,8 @@ class Utils {
     if (sourceVersion) {
       const versionString = shortVersion ? sourceVersion.substring(0, 6) : sourceVersion;
       if (sourceType === 'PROJECT') {
-        const url = Utils.getGitCommitUrl(sourceName, sourceVersion);
+        // const url = Utils.getGitCommitUrl(sourceName, sourceVersion);
+        const url = null;
         if (url) {
           return (
             <a href={url} target='_top'>

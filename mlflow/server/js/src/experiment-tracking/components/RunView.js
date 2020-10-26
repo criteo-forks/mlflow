@@ -15,7 +15,7 @@ import { NOTE_CONTENT_TAG, NoteInfo } from '../utils/NoteUtils';
 import { BreadcrumbTitle } from './BreadcrumbTitle';
 import { RenameRunModal } from './modals/RenameRunModal';
 import EditableTagsTableView from '../../common/components/EditableTagsTableView';
-import { Icon, Descriptions, message } from 'antd';
+import { Icon, Descriptions, message, Button } from 'antd';
 import { CollapsibleSection } from '../../common/components/CollapsibleSection';
 import { EditableNote } from '../../common/components/EditableNote';
 import { IconButton } from '../../common/components/IconButton';
@@ -110,9 +110,9 @@ export class RunViewImpl extends Component {
     const backend = Utils.getBackend(tags);
     if (Utils.getSourceType(tags) === 'PROJECT') {
       runCommand = 'mlflow run ' + shellEscape(sourceName);
-      if (sourceVersion && sourceVersion !== 'latest') {
-        runCommand += ' -v ' + shellEscape(sourceVersion);
-      }
+      // if (sourceVersion && sourceVersion !== 'latest') {
+      //   runCommand += ' -v ' + shellEscape(sourceVersion);
+      // }
       if (entryPointName && entryPointName !== 'main') {
         runCommand += ' -e ' + shellEscape(entryPointName);
       }
@@ -248,6 +248,14 @@ export class RunViewImpl extends Component {
           {runCommand ? (
             <CollapsibleSection title='Run Command'>
               <textarea className='run-command text-area' readOnly value={runCommand} />
+              <Button
+                className='relaunch-run-btn'
+                type='primary'
+                onClick={() => this.relaunchRun(runCommand, this.props.experimentId)}
+                htmlType='button'
+              >
+              Relaunch run
+              </Button>
             </CollapsibleSection>
           ) : null}
           <CollapsibleSection
@@ -300,6 +308,13 @@ export class RunViewImpl extends Component {
       // Successfully submitted note, close the editor
       this.setState({ showNotesEditor: false });
     }
+  }
+
+  relaunchRun = (runCommand, experimentId) => {
+    const req = new XMLHttpRequest();
+    req.open('POST', '/relaunch');
+    req.setRequestHeader("Content-Type", "application/json");
+    req.send(JSON.stringify({ command: runCommand, experiment_id: experimentId}));
   }
 }
 
