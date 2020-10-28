@@ -22,7 +22,7 @@ import EditableTagsTableView from '../../common/components/EditableTagsTableView
 import { getModelVersionTags } from '../reducers';
 import { setModelVersionTagApi, deleteModelVersionTagApi } from '../actions';
 import { connect } from 'react-redux';
-import DOMPurify from 'dompurify';
+import Iframe from 'react-iframe';
 
 export class ModelVersionViewImpl extends React.Component {
   static propTypes = {
@@ -221,6 +221,11 @@ export class ModelVersionViewImpl extends React.Component {
     }
   }
 
+  getBlobURL = (code, type) => {
+    const blob = new Blob([code], { type });
+    return URL.createObjectURL(blob);
+  };
+
   render() {
     const {
       modelName,
@@ -310,12 +315,17 @@ export class ModelVersionViewImpl extends React.Component {
         </CollapsibleSection>
         <CollapsibleSection title='Schema'>
           {flavors && 'criteo' in flavors ? (
-            <div
-              // eslint-disable-next-line react/no-danger
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(htmlModel),
-              }}
-            ></div>
+            <Iframe
+              url=''
+              src={this.getBlobURL(htmlModel, 'text/html')}
+              width='100%'
+              height='500px'
+              id='html'
+              className='html-iframe'
+              display='block'
+              position='relative'
+              sandbox='allow-scripts'
+            />
           ) : (
             <SchemaTable schema={schema} />
           )}
