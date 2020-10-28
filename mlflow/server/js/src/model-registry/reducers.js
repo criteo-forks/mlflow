@@ -11,11 +11,13 @@ import {
   SET_MODEL_VERSION_TAG,
   DELETE_MODEL_VERSION_TAG,
   PARSE_MLMODEL_FILE,
+  GET_MODEL_VERSION_ARTIFACT_HTML,
 } from './actions';
 import { getProtoField } from './utils';
 import _ from 'lodash';
 import { fulfilled, rejected } from '../common/utils/ActionUtils';
 import { RegisteredModelTag, ModelVersionTag } from './sdk/ModelRegistryMessages';
+import { version } from 'react';
 
 const modelByName = (state = {}, action) => {
   switch (action.type) {
@@ -126,6 +128,29 @@ const mlModelArtifactByModelVersion = (state = {}, action) => {
   }
 };
 
+const mlModelArtifactHtmlByModelVersion = (state = {}, action) => {
+  switch (action.type) {
+    case fulfilled(GET_MODEL_VERSION_ARTIFACT_HTML): {
+      const html_model = action.payload.includes("Internal Server Error") ? "There is no model_data_id.html for this Criteo model" : action.payload;
+      const { modelName, version } = action.meta;
+      return {
+        ...state,
+        [modelName]: {
+          ...state[modelName],
+          [version]: html_model,
+        },
+      };
+    }
+    default:
+      return state;
+  }
+};
+
+export const getModelVersionHtml = (state, modelName, version) => {
+  const modelHtml = state.entities.mlModelArtifactHtmlByModelVersion[modelName];
+  return modelHtml && modelHtml[version];
+}
+
 export const getModelVersionSchemas = (state, modelName, version) => {
   const schemaMap = {};
   schemaMap['inputs'] = [];
@@ -145,6 +170,20 @@ export const getModelVersionSchemas = (state, modelName, version) => {
     }
   }
   return schemaMap;
+};
+
+export const getModelVersionFlavors = (state, modelName, version) => {
+  var flavors = {};
+  if (
+    state.entities.mlModelArtifactByModelVersion[modelName] &&
+    state.entities.mlModelArtifactByModelVersion[modelName][version]
+  ) {
+    const artifact = state.entities.mlModelArtifactByModelVersion[modelName][version];
+    if (artifact.flavors) {
+      flavors = artifact.flavors;
+    }
+  }
+  return flavors;
 };
 
 export const getModelVersionSchemaInputsByIndex = (state, modelName, version) => {
@@ -344,4 +383,5 @@ export default {
   tagsByRegisteredModel,
   tagsByModelVersion,
   mlModelArtifactByModelVersion,
+  mlModelArtifactHtmlByModelVersion,
 };

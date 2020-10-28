@@ -7,10 +7,11 @@ import {
   transitionModelVersionStageApi,
   getModelVersionArtifactApi,
   parseMlModelFile,
+  getModelVersionArtifactHtml,
 } from '../actions';
 import { getRunApi } from '../../experiment-tracking/actions';
 import PropTypes from 'prop-types';
-import { getModelVersion, getModelVersionSchemas } from '../reducers';
+import { getModelVersion, getModelVersionSchemas, getModelVersionFlavors, getModelVersionHtml } from '../reducers';
 import { ModelVersionView } from './ModelVersionView';
 import { ActivityTypes, MODEL_VERSION_STATUS_POLL_INTERVAL as POLL_INTERVAL } from '../constants';
 import Utils from '../../common/utils/Utils';
@@ -41,8 +42,10 @@ export class ModelVersionPageImpl extends React.Component {
     getRunApi: PropTypes.func.isRequired,
     apis: PropTypes.object.isRequired,
     getModelVersionArtifactApi: PropTypes.func.isRequired,
+    getModelVersionArtifactHtml: PropTypes.func.isRequired,
     parseMlModelFile: PropTypes.func.isRequired,
     schema: PropTypes.object,
+    flavors: PropTypes.object,
   };
 
   initGetModelVersionDetailsRequestId = getUUID();
@@ -116,6 +119,22 @@ export class ModelVersionPageImpl extends React.Component {
         }));
       });
   }
+  getModelVersionMlModelHtml() {
+    const { modelName, version } = this.props;
+    this.props
+      .getModelVersionArtifactHtml(modelName, version)
+      .catch(() => {
+        // Failure of this call chain should not block the page. Here we remove
+        // `initGetMlModelFileRequestId` from `criticalInitialRequestIds`
+        // to unblock RequestStateWrapper from rendering its content
+        this.setState((prevState) => ({
+          criticalInitialRequestIds: _.without(
+            prevState.criticalInitialRequestIds,
+            this.initGetMlModelFileRequestId,
+          ),
+        }));
+      });
+  }
 
   handleStageTransitionDropdownSelect = (activity, archiveExistingVersions) => {
     const { modelName, version } = this.props;
@@ -164,6 +183,12 @@ export class ModelVersionPageImpl extends React.Component {
     this.getModelVersionMlModelFile();
   }
 
+  componentDidUpdate(prevProps) {
+    if (!("criteo" in prevProps.flavors) & ("criteo" in this.props.flavors)) {
+      this.getModelVersionMlModelHtml();
+    }
+  }
+
   componentWillUnmount() {
     clearTimeout(this.pollIntervalId);
   }
@@ -177,6 +202,8 @@ export class ModelVersionPageImpl extends React.Component {
       runDisplayName,
       history,
       schema,
+      flavors,
+      htmlModel,
     } = this.props;
 
     return (
@@ -211,6 +238,8 @@ export class ModelVersionPageImpl extends React.Component {
                   history={history}
                   handleStageTransitionDropdownSelect={this.handleStageTransitionDropdownSelect}
                   schema={schema}
+                  flavors={flavors}
+                  htmlModel={htmlModel}
                 />
               );
             }
@@ -226,6 +255,8 @@ const mapStateToProps = (state, ownProps) => {
   const { modelName, version } = ownProps.match.params;
   const modelVersion = getModelVersion(state, modelName, version);
   const schema = getModelVersionSchemas(state, modelName, version);
+  const flavors = getModelVersionFlavors(state, modelName, version);
+  const htmlModel = getModelVersionHtml(state, modelName, version)
   let runInfo = null;
   if (modelVersion && !modelVersion.run_link) {
     runInfo = getRunInfo(modelVersion && modelVersion.run_id, state);
@@ -238,6 +269,8 @@ const mapStateToProps = (state, ownProps) => {
     version,
     modelVersion,
     schema,
+    flavors,
+    htmlModel,
     runInfo,
     runDisplayName,
     apis,
@@ -252,6 +285,7 @@ const mapDispatchToProps = {
   parseMlModelFile,
   deleteModelVersionApi,
   getRunApi,
+  getModelVersionArtifactHtml,
 };
 
 export const ModelVersionPage = connect(mapStateToProps, mapDispatchToProps)(ModelVersionPageImpl);
