@@ -94,6 +94,19 @@ export const getModelVersionArtifactApi = (modelName, version, id = getUUID()) =
   };
 };
 
+export const GET_MODEL_VERSION_ARTIFACT_HTML = 'GET_MODEL_VERSION_ARTIFACT_HTML';
+export const getModelVersionArtifactHtml = (modelName, version, id = getUUID()) => {
+  const baseUri = '/model-versions/get-artifact?path=model_data_id.html';
+  const uriEncodedModelName = `name=${encodeURIComponent(modelName)}`;
+  const uriEncodedModelVersion = `version=${encodeURIComponent(version)}`;
+  const artifactLocation = `${baseUri}&${uriEncodedModelName}&${uriEncodedModelVersion}`;
+  return {
+    type: GET_MODEL_VERSION_ARTIFACT_HTML,
+    payload: getArtifactContent(artifactLocation),
+    meta: { id, modelName, version },
+  };
+};
+
 // pass `null` to the `parseMlModelFile` API when we failed to fetch the
 // file from DBFS. This will ensure requestId is registered in redux `apis` state
 export const PARSE_MLMODEL_FILE = 'PARSE_MLMODEL_FILE';

@@ -28,6 +28,8 @@ export class ModelVersionViewImpl extends React.Component {
     modelName: PropTypes.string,
     modelVersion: PropTypes.object,
     schema: PropTypes.object,
+    flavors: PropTypes.object,
+    htmlModel: PropTypes.string,
     runInfo: PropTypes.object,
     runDisplayName: PropTypes.string,
     handleStageTransitionDropdownSelect: PropTypes.func.isRequired,
@@ -225,6 +227,8 @@ export class ModelVersionViewImpl extends React.Component {
       handleStageTransitionDropdownSelect,
       tags,
       schema,
+      flavors,
+      htmlModel,
     } = this.props;
     const { status, description } = modelVersion;
     const {
@@ -304,7 +308,15 @@ export class ModelVersionViewImpl extends React.Component {
           />
         </CollapsibleSection>
         <CollapsibleSection title='Schema'>
-          <SchemaTable schema={schema} />
+          {'criteo' in flavors ? (
+            <div
+              dangerouslySetInnerHTML={{
+                __html: htmlModel,
+              }}
+            ></div>
+          ) : (
+            <SchemaTable schema={schema} />
+          )}
         </CollapsibleSection>
         <Modal
           title='Delete Model Version'
