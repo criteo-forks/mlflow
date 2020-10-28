@@ -51,6 +51,7 @@ export class ModelVersionPageImpl extends React.Component {
     parseMlModelFile: PropTypes.func.isRequired,
     schema: PropTypes.object,
     flavors: PropTypes.object,
+    htmlModel: PropTypes.string,
   };
 
   initGetModelVersionDetailsRequestId = getUUID();
@@ -187,7 +188,7 @@ export class ModelVersionPageImpl extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (!('criteo' in prevProps.flavors) & ('criteo' in this.props.flavors)) {
+    if (!('criteo' in prevProps.flavors) && 'criteo' in this.props.flavors) {
       this.getModelVersionMlModelHtml();
     }
   }

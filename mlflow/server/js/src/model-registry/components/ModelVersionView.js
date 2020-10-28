@@ -22,6 +22,7 @@ import EditableTagsTableView from '../../common/components/EditableTagsTableView
 import { getModelVersionTags } from '../reducers';
 import { setModelVersionTagApi, deleteModelVersionTagApi } from '../actions';
 import { connect } from 'react-redux';
+import DOMPurify from 'dompurify';
 
 export class ModelVersionViewImpl extends React.Component {
   static propTypes = {
@@ -308,10 +309,11 @@ export class ModelVersionViewImpl extends React.Component {
           />
         </CollapsibleSection>
         <CollapsibleSection title='Schema'>
-          {'criteo' in flavors ? (
+          {flavors && 'criteo' in flavors ? (
             <div
+              // eslint-disable-next-line react/no-danger
               dangerouslySetInnerHTML={{
-                __html: htmlModel,
+                __html: DOMPurify.sanitize(htmlModel),
               }}
             ></div>
           ) : (

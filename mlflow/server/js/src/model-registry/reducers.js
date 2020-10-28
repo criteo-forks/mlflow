@@ -17,7 +17,6 @@ import { getProtoField } from './utils';
 import _ from 'lodash';
 import { fulfilled, rejected } from '../common/utils/ActionUtils';
 import { RegisteredModelTag, ModelVersionTag } from './sdk/ModelRegistryMessages';
-import { version } from 'react';
 
 const modelByName = (state = {}, action) => {
   switch (action.type) {
@@ -175,17 +174,17 @@ export const getModelVersionSchemas = (state, modelName, version) => {
 };
 
 export const getModelVersionFlavors = (state, modelName, version) => {
-  var flavors = {};
   if (
     state.entities.mlModelArtifactByModelVersion[modelName] &&
     state.entities.mlModelArtifactByModelVersion[modelName][version]
   ) {
     const artifact = state.entities.mlModelArtifactByModelVersion[modelName][version];
     if (artifact.flavors) {
-      flavors = artifact.flavors;
+      const { flavors } = artifact;
+      return flavors;
     }
   }
-  return flavors;
+  return {};
 };
 
 export const getModelVersionSchemaInputsByIndex = (state, modelName, version) => {
