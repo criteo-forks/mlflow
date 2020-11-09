@@ -78,7 +78,7 @@ class MNISTDataModule(pl.LightningDataModule):
             type=int,
             default=3,
             metavar="N",
-            help="number of workers (default: 0)",
+            help="number of workers (default: 3)",
         )
         return parser
 
@@ -222,7 +222,7 @@ class LightningMNISTClassifier(pl.LightningModule):
         :return: output - average valid loss
         """
         avg_loss = torch.stack([x["val_step_loss"] for x in outputs]).mean()
-        self.log("val_loss", avg_loss)
+        self.log("val_loss", avg_loss, sync_dist=True)
 
     def test_step(self, test_batch, batch_idx):
         """
@@ -270,27 +270,6 @@ class LightningMNISTClassifier(pl.LightningModule):
             "monitor": "val_loss",
         }
         return [self.optimizer], [self.scheduler]
-
-    def optimizer_step(
-        self,
-        epoch,
-        batch_idx,
-        optimizer,
-        optimizer_idx,
-        second_order_closure=None,
-        on_tpu=False,
-        using_lbfgs=False,
-        using_native_amp=False,
-    ):
-        """
-        Training step function which runs for the given number of epochs
-
-        :param epoch: Number of epochs to train
-        :param batch_idx: batch indices
-        :param optimizer: Optimizer to be used in training step
-        """
-        self.optimizer.step()
-        self.optimizer.zero_grad()
 
 
 if __name__ == "__main__":

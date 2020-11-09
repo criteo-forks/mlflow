@@ -1,4 +1,3 @@
-import os
 import pytest
 import pytorch_lightning as pl
 import torch
@@ -7,6 +6,7 @@ import mlflow
 import mlflow.pytorch
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning.callbacks import ModelCheckpoint
+from mlflow.utils.file_utils import TempDir
 
 NUM_EPOCHS = 20
 
@@ -17,24 +17,23 @@ def pytorch_model():
     model = IrisClassification()
     trainer = pl.Trainer(max_epochs=NUM_EPOCHS)
     trainer.fit(model)
-    optimizer_name = type(trainer.optimizers[0]).__name__.lower() + "_optimizer"
     client = mlflow.tracking.MlflowClient()
     run = client.get_run(client.list_run_infos(experiment_id="0")[0].run_id)
-    return trainer, run, optimizer_name
+    return trainer, run
 
 
 def test_pytorch_autolog_logs_default_params(pytorch_model):
-    _, run, optimizer_name = pytorch_model
+    _, run = pytorch_model
     data = run.data
-    assert "learning_rate_" + optimizer_name in data.params
-    assert "epsilon_" + optimizer_name in data.params
+    assert "lr" in data.params
+    assert "eps" in data.params
     assert "optimizer_name" in data.params
-    assert "weight_decay_" + optimizer_name in data.params
-    assert "betas_" + optimizer_name in data.params
+    assert "weight_decay" in data.params
+    assert "betas" in data.params
 
 
 def test_pytorch_autolog_logs_expected_data(pytorch_model):
-    _, run, _ = pytorch_model
+    _, run = pytorch_model
     data = run.data
 
     # Checking if metrics are logged
@@ -73,19 +72,25 @@ def pytorch_model_with_callback(patience):
     model = IrisClassification()
     early_stopping = EarlyStopping(monitor="val_loss", mode="min", patience=patience, verbose=True)
 
-    checkpoint_callback = ModelCheckpoint(
-        filepath=os.getcwd(), save_top_k=1, verbose=True, monitor="val_loss", mode="min", prefix=""
-    )
+    with TempDir() as tmp:
+        checkpoint_callback = ModelCheckpoint(
+            filepath=tmp.path(),
+            save_top_k=1,
+            verbose=True,
+            monitor="val_loss",
+            mode="min",
+            prefix="",
+        )
 
-    trainer = pl.Trainer(
-        max_epochs=NUM_EPOCHS * 2,
-        callbacks=[early_stopping],
-        checkpoint_callback=checkpoint_callback,
-    )
-    trainer.fit(model)
+        trainer = pl.Trainer(
+            max_epochs=NUM_EPOCHS * 2,
+            callbacks=[early_stopping],
+            checkpoint_callback=checkpoint_callback,
+        )
+        trainer.fit(model)
 
-    client = mlflow.tracking.MlflowClient()
-    run = client.get_run(client.list_run_infos(experiment_id="0")[0].run_id)
+        client = mlflow.tracking.MlflowClient()
+        run = client.get_run(client.list_run_infos(experiment_id="0")[0].run_id)
 
     return trainer, run
 
@@ -134,7 +139,7 @@ def test_pytorch_early_stop_metrics_logged(pytorch_model_with_callback):
 
 
 def test_pytorch_autolog_non_early_stop_callback_does_not_log(pytorch_model):
-    trainer, run, _ = pytorch_model
+    trainer, run = pytorch_model
     client = mlflow.tracking.MlflowClient()
     metric_history = client.get_metric_history(run.info.run_id, "loss")
     assert trainer.max_epochs == NUM_EPOCHS
