@@ -58,7 +58,7 @@ class TestRestStore(unittest.TestCase):
     def _args(self, host_creds, endpoint, method, json_body, host_creds_refresh_func):
         res = {
             "host_creds": host_creds,
-            "endpoint": "/api/2.0/mlflow/%s" % endpoint,
+            "endpoint": "/api/2.0/preview/mlflow/%s" % endpoint,
             "method": method,
             "host_creds_refresh_func": host_creds_refresh_func,
         }
