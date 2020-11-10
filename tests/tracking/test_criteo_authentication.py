@@ -40,7 +40,7 @@ def test_authenticated_client_put_token_in_header(jtc_patch):
 
 def test_set_canonicalize_hostname_false_on_existing_canonicalize_hostname():
     with tempfile.TemporaryDirectory() as work_dir:
-        config_file = f"{work_dir}/krb5.conf"
+        config_file = work_dir + "/krb5.conf"
         with open(config_file, "w") as f:
             f.write("[libdefaults]\ndns_canonicalize_hostname=true")
         _set_canonicalize_hostname_false(config_file)
@@ -53,7 +53,7 @@ def test_set_canonicalize_hostname_false_on_existing_canonicalize_hostname():
 
 def test_set_canonicalize_hostname_false_on_non_existing_canonicalize_hostname():
     with tempfile.TemporaryDirectory() as work_dir:
-        config_file = f"{work_dir}/krb5.conf"
+        config_file = work_dir + "/krb5.conf"
         with open(config_file, "w") as f:
             f.write("[libdefaults]\ntoto=true")
         _set_canonicalize_hostname_false(config_file)
