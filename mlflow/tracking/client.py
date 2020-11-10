@@ -4,6 +4,8 @@ and model versions. This is a lower level API than the :py:mod:`mlflow.tracking.
 and is exposed in the :py:mod:`mlflow.tracking` module.
 """
 import logging
+import os
+from mlflow.tracking.criteo_authentication import register_criteo_authenticated_rest_store
 from mlflow.entities import ViewType
 from mlflow.entities.model_registry.model_version_stages import ALL_STAGES
 from mlflow.exceptions import MlflowException
@@ -48,6 +50,7 @@ class MlflowClient(object):
                              defaults to the service set by ``mlflow.tracking.set_registry_uri``. If
                              no such service was set, defaults to the tracking uri of the client.
         """
+        register_criteo_authenticated_rest_store()
         final_tracking_uri = utils._resolve_tracking_uri(tracking_uri)
         self._registry_uri = registry_utils._resolve_registry_uri(registry_uri, tracking_uri)
         self._tracking_client = TrackingServiceClient(final_tracking_uri)

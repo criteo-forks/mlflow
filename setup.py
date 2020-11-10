@@ -50,6 +50,7 @@ setup(
         "cloudpickle",
         "databricks-cli>=0.8.7",
         "requests>=2.17.3",
+        "requests-gssapi",
         "six>=1.10.0",
         'waitress; platform_system == "Windows"',
         'gunicorn; platform_system != "Windows"',
