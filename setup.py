@@ -25,6 +25,7 @@ alembic_files = [
     "../mlflow/store/db_migrations/alembic.ini",
     "../mlflow/temporary_db_migrations_for_pre_1_users/alembic.ini",
 ]
+criteo_packages = []
 
 
 def _check_add_criteo_environment(package_name):
@@ -32,6 +33,7 @@ def _check_add_criteo_environment(package_name):
     if "JENKINS_URL" in os.environ and (
         "criteois.lan" in os.environ["JENKINS_URL"] or "crto.in" in os.environ["JENKINS_URL"]
     ):
+        criteo_packages.append("requests-gssapi")
         return package_name + "+criteo." + str(int(time.time()))
 
     return package_name
@@ -50,7 +52,6 @@ setup(
         "cloudpickle",
         "databricks-cli>=0.8.7",
         "requests>=2.17.3",
-        "requests-gssapi",
         "six>=1.10.0",
         'waitress; platform_system == "Windows"',
         'gunicorn; platform_system != "Windows"',
@@ -69,7 +70,7 @@ setup(
         # Required to run the MLflow server against SQL-backed storage
         "sqlalchemy",
         "prometheus-flask-exporter",
-    ],
+    ] + criteo_packages,
     extras_require={
         "extras": [
             "scikit-learn",
