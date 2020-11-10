@@ -3,7 +3,6 @@ from typing import Any
 import subprocess
 
 import requests
-from requests_gssapi import HTTPSPNEGOAuth
 
 from mlflow.store.tracking.rest_store import RestStore
 from mlflow.utils.rest_utils import MlflowHostCreds
@@ -28,6 +27,7 @@ def _get_authenticated_rest_store(store_uri: str, **_: Any) -> RestStore:
 
 
 def _generate_jwt_from_kerberos():
+    from requests_gssapi import HTTPSPNEGOAuth
     auth = HTTPSPNEGOAuth()
     if os.getenv('CRITEO_ENV', 'dev').lower() == 'prod':
         jtc_url = 'https://jtc.prod.crto.in/spnego/generate/jwt'
