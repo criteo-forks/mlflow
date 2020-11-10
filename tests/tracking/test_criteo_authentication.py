@@ -32,7 +32,7 @@ def test_authenticated_client_put_token_in_header(jtc_patch):
         status=200,
     )
     jtc_patch.return_value = "my-token"
-    old_store = _tracking_store_registry._registry['http']
+    old_store = _tracking_store_registry._registry["http"]
     register_criteo_authenticated_rest_store()
     mlflow.set_tracking_uri(get_tracking_server_uri())
     mlflow.get_experiment("0")
