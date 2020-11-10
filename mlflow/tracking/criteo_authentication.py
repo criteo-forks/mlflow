@@ -14,7 +14,7 @@ from mlflow.tracking._tracking_service.utils import (
 
 def get_tracking_server_uri() -> str:
     env = os.getenv("CRITEO_ENV", "preprod")
-    return f"https://mlflow.par.{env}.crto.in"
+    return "https://mlflow.par." + env + ".crto.in"
 
 
 # pylint: disable=unused-argument
@@ -45,8 +45,8 @@ def _generate_jwt_from_kerberos():
 
 def _set_canonicalize_hostname_false(config_file: str = "/etc/krb5.conf") -> None:
     cmd = (
-        f"grep -vE '^.*dns_canonicalize_hostname.*=.*' {config_file} | sed 's/\\[libdefaults\\]"
-        "/\\[libdefaults\\]\\n  dns_canonicalize_hostname = false/' > /tmp/krb.hadoop.jtc.conf"
+        "grep -vE '^.*dns_canonicalize_hostname.*=.*' " + config_file + " | sed 's/\\[libdefaults\\"
+        "]/\\[libdefaults\\]\\n  dns_canonicalize_hostname = false/' > /tmp/krb.hadoop.jtc.conf"
     )
     subprocess.check_output(cmd, shell=True)
     os.environ["KRB5_CONFIG"] = "/tmp/krb.hadoop.jtc.conf"
