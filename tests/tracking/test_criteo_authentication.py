@@ -9,6 +9,7 @@ from mlflow.tracking.criteo_authentication import (
     _set_canonicalize_hostname_false,
     get_tracking_server_uri,
 )
+from mlflow.tracking._tracking_service.utils import _tracking_store_registry
 
 
 @responses.activate
@@ -28,10 +29,13 @@ def test_authenticated_client_put_token_in_header(jtc_patch):
         status=200,
     )
     jtc_patch.return_value = "my-token"
+    old_store = _tracking_store_registry._registry['http']
     register_criteo_authenticated_rest_store()
     mlflow.set_tracking_uri(get_tracking_server_uri())
     mlflow.get_experiment("0")
     assert responses.calls[0].request.headers["Authorization"] == "Bearer my-token"
+    for scheme in ["http", "https"]:
+        _tracking_store_registry.register(scheme, old_store)
 
 
 def test_set_canonicalize_hostname_false_on_existing_canonicalize_hostname():
