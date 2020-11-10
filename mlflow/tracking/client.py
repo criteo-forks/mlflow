@@ -50,7 +50,8 @@ class MlflowClient(object):
                              defaults to the service set by ``mlflow.tracking.set_registry_uri``. If
                              no such service was set, defaults to the tracking uri of the client.
         """
-        register_criteo_authenticated_rest_store()
+        if "CRITEO_ENV" in os.environ:
+            register_criteo_authenticated_rest_store()
         final_tracking_uri = utils._resolve_tracking_uri(tracking_uri)
         self._registry_uri = registry_utils._resolve_registry_uri(registry_uri, tracking_uri)
         self._tracking_client = TrackingServiceClient(final_tracking_uri)
