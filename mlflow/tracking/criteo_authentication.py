@@ -33,6 +33,7 @@ def _get_authenticated_rest_store(store_uri: str, **_: Any) -> RestStore:
 
 def _generate_jwt_from_kerberos():
     from requests_gssapi import HTTPSPNEGOAuth  # pylint: disable=import-error
+
     _set_canonicalize_hostname_false()
     auth = HTTPSPNEGOAuth()
     if os.getenv("CRITEO_ENV", "dev").lower() == "prod":
