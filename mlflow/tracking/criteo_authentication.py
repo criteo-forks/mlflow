@@ -1,4 +1,5 @@
 import os
+import sys
 from typing import Any
 import subprocess
 
@@ -44,12 +45,15 @@ def _generate_jwt_from_kerberos():
 
 
 def _set_canonicalize_hostname_false(config_file: str = "/etc/krb5.conf") -> None:
-    cmd = (
-        "grep -vE '^.*dns_canonicalize_hostname.*=.*' " + config_file + " | sed 's/\\[libdefaults\\"
-        "]/\\[libdefaults\\]\\n  dns_canonicalize_hostname = false/' > /tmp/krb.hadoop.jtc.conf"
-    )
-    subprocess.check_output(cmd, shell=True)
-    os.environ["KRB5_CONFIG"] = "/tmp/krb.hadoop.jtc.conf"
+    if sys.platform != "win32":
+        cmd = (
+            "grep -vE '^.*dns_canonicalize_hostname.*=.*' "
+            + config_file
+            + " | sed 's/\\[libdefaults\\]/\\[libdefaults\\]\\n  dns_canonicalize_hostname = false/"
+            "' > /tmp/krb.hadoop.jtc.conf"
+        )
+        subprocess.check_output(cmd, shell=True)
+        os.environ["KRB5_CONFIG"] = "/tmp/krb.hadoop.jtc.conf"
 
 
 def register_criteo_authenticated_rest_store() -> None:
