@@ -22,7 +22,6 @@ def get_tracking_server_uri() -> str:
 def _get_authenticated_rest_store(store_uri: str, **_: Any) -> RestStore:
     def _return_token(force_refresh_token: bool = False) -> MlflowHostCreds:
         if _TRACKING_TOKEN_ENV_VAR not in os.environ or force_refresh_token:
-            _set_canonicalize_hostname_false()
             token = _generate_jwt_from_kerberos().replace("Bearer ", "")
             os.environ[_TRACKING_TOKEN_ENV_VAR] = token
         return MlflowHostCreds(
@@ -34,7 +33,7 @@ def _get_authenticated_rest_store(store_uri: str, **_: Any) -> RestStore:
 
 def _generate_jwt_from_kerberos():
     from requests_gssapi import HTTPSPNEGOAuth  # pylint: disable=import-error
-
+    _set_canonicalize_hostname_false()
     auth = HTTPSPNEGOAuth()
     if os.getenv("CRITEO_ENV", "dev").lower() == "prod":
         jtc_url = "https://jtc.prod.crto.in/spnego/generate/jwt"
