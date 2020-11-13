@@ -46,8 +46,7 @@ def test_authenticated_client_put_token_in_header(jtc_patch):
     del os.environ[_TRACKING_TOKEN_ENV_VAR]
 
 
-@pytest.mark.skipif(sys.platform == "win32",
-                    reason="Command line only works on linux")
+@pytest.mark.skipif(sys.platform == "win32", reason="Command line only works on linux")
 def test_set_canonicalize_hostname_false_on_existing_canonicalize_hostname():
     with tempfile.TemporaryDirectory() as work_dir:
         config_file = work_dir + "/krb5.conf"
@@ -61,8 +60,7 @@ def test_set_canonicalize_hostname_false_on_existing_canonicalize_hostname():
         os.remove("/tmp/krb.hadoop.jtc.conf")
 
 
-@pytest.mark.skipif(sys.platform == "win32",
-                    reason="Command line only works on linux")
+@pytest.mark.skipif(sys.platform == "win32", reason="Command line only works on linux")
 def test_set_canonicalize_hostname_false_on_non_existing_canonicalize_hostname():
     with tempfile.TemporaryDirectory() as work_dir:
         config_file = work_dir + "/krb5.conf"
