@@ -1,6 +1,7 @@
 import tempfile
 import os
 import sys
+import pytest
 
 from unittest import mock
 import responses
@@ -45,28 +46,30 @@ def test_authenticated_client_put_token_in_header(jtc_patch):
     del os.environ[_TRACKING_TOKEN_ENV_VAR]
 
 
+@pytest.mark.skipif(sys.platform == "win32",
+                    reason="Command line only works on linux")
 def test_set_canonicalize_hostname_false_on_existing_canonicalize_hostname():
-    if sys.platform != "win32":
-        with tempfile.TemporaryDirectory() as work_dir:
-            config_file = work_dir + "/krb5.conf"
-            with open(config_file, "w") as f:
-                f.write("[libdefaults]\ndns_canonicalize_hostname=true")
-            _set_canonicalize_hostname_false(config_file)
-            with open("/tmp/krb.hadoop.jtc.conf", "r") as f:
-                krb5_conf = f.read()
-                assert "dns_canonicalize_hostname = false" in krb5_conf
-                assert "dns_canonicalize_hostname = true" not in krb5_conf
-            os.remove("/tmp/krb.hadoop.jtc.conf")
+    with tempfile.TemporaryDirectory() as work_dir:
+        config_file = work_dir + "/krb5.conf"
+        with open(config_file, "w") as f:
+            f.write("[libdefaults]\ndns_canonicalize_hostname=true")
+        _set_canonicalize_hostname_false(config_file)
+        with open("/tmp/krb.hadoop.jtc.conf", "r") as f:
+            krb5_conf = f.read()
+            assert "dns_canonicalize_hostname = false" in krb5_conf
+            assert "dns_canonicalize_hostname = true" not in krb5_conf
+        os.remove("/tmp/krb.hadoop.jtc.conf")
 
 
+@pytest.mark.skipif(sys.platform == "win32",
+                    reason="Command line only works on linux")
 def test_set_canonicalize_hostname_false_on_non_existing_canonicalize_hostname():
-    if sys.platform != "win32":
-        with tempfile.TemporaryDirectory() as work_dir:
-            config_file = work_dir + "/krb5.conf"
-            with open(config_file, "w") as f:
-                f.write("[libdefaults]\ntoto=true")
-            _set_canonicalize_hostname_false(config_file)
-            with open("/tmp/krb.hadoop.jtc.conf", "r") as f:
-                krb5_conf = f.read()
-                assert "dns_canonicalize_hostname = false" in krb5_conf
-            os.remove("/tmp/krb.hadoop.jtc.conf")
+    with tempfile.TemporaryDirectory() as work_dir:
+        config_file = work_dir + "/krb5.conf"
+        with open(config_file, "w") as f:
+            f.write("[libdefaults]\ntoto=true")
+        _set_canonicalize_hostname_false(config_file)
+        with open("/tmp/krb.hadoop.jtc.conf", "r") as f:
+            krb5_conf = f.read()
+            assert "dns_canonicalize_hostname = false" in krb5_conf
+        os.remove("/tmp/krb.hadoop.jtc.conf")

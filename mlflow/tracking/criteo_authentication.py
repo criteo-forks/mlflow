@@ -14,8 +14,9 @@ from mlflow.tracking._tracking_service.utils import (
 
 
 def get_tracking_server_uri() -> str:
-    env = os.getenv("CRITEO_ENV", "preprod")
-    return "https://mlflow.par." + env + ".crto.in"
+    env = os.getenv("CRITEO_ENV", "preprod").lower()
+    domain = "prod" if env == "prod" else "preprod"
+    return "https://mlflow.par." + domain + ".crto.in"
 
 
 # pylint: disable=unused-argument
