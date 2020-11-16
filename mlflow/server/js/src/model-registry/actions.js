@@ -83,7 +83,7 @@ export const createModelVersionApi = (name, source, runId, id = getUUID()) => ({
 
 export const GET_MODEL_VERSION_ARTIFACT = 'GET_MODEL_VERSION_ARTIFACT';
 export const getModelVersionArtifactApi = (modelName, version, id = getUUID()) => {
-  const baseUri = 'model-versions/get-artifact?path=MLmodel';
+  const baseUri = '/model-versions/get-artifact?path=MLmodel';
   const uriEncodedModelName = `name=${encodeURIComponent(modelName)}`;
   const uriEncodedModelVersion = `version=${encodeURIComponent(version)}`;
   const artifactLocation = `${baseUri}&${uriEncodedModelName}&${uriEncodedModelVersion}`;
