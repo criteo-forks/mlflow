@@ -45,6 +45,7 @@ from mlflow.utils.autologging_utils import (
     resolve_input_example_and_signature,
     _InputExampleInfo,
     ENSURE_AUTOLOGGING_ENABLED_TEXT,
+    batch_metrics_logger,
 )
 from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
 
@@ -283,8 +284,8 @@ class _XGBModelWrapper:
 
 @experimental
 def autolog(
-    importance_types=["weight"], log_input_examples=False, log_model_signatures=True
-):  # pylint: disable=W0102
+    importance_types=None, log_input_examples=False, log_model_signatures=True, log_models=True,
+):
     """
     Enables automatic logging from XGBoost to MLflow. Logs the following.
 
@@ -298,18 +299,29 @@ def autolog(
 
     Note that the `scikit-learn API`_ is not supported.
 
-    :param importance_types: importance types to log.
+    :param importance_types: Importance types to log. If unspecified, defaults to ``["weight"]``.
     :param log_input_examples: If ``True``, input examples from training datasets are collected and
                                logged along with XGBoost model artifacts during training. If
                                ``False``, input examples are not logged.
+                               Note: Input examples are MLflow model attributes
+                               and are only collected if ``log_models`` is also ``True``.
     :param log_model_signatures: If ``True``,
                                  :py:class:`ModelSignatures <mlflow.models.ModelSignature>`
                                  describing model inputs and outputs are collected and logged along
                                  with XGBoost model artifacts during training. If ``False``,
                                  signatures are not logged.
+                                 Note: Model signatures are MLflow model attributes
+                                 and are only collected if ``log_models`` is also ``True``.
+    :param log_models: If ``True``, trained models are logged as MLflow model artifacts.
+                       If ``False``, trained models are not logged.
+                       Input examples and model signatures, which are attributes of MLflow models,
+                       are also omitted when ``log_models`` is ``False``.
     """
     import xgboost
     import numpy as np
+
+    if importance_types is None:
+        importance_types = ["weight"]
 
     # Patching this function so we can get a copy of the data given to DMatrix.__init__
     #   to use as an input example and for inferring the model signature.
@@ -337,12 +349,13 @@ def autolog(
         original(self, *args, **kwargs)
 
     def train(*args, **kwargs):
-        def record_eval_results(eval_results):
+        def record_eval_results(eval_results, metrics_logger):
             """
             Create a callback function that records evaluation results.
             """
 
             def callback(env):
+                metrics_logger.record_metrics(dict(env.evaluation_result_list), env.iteration)
                 eval_results.append(dict(env.evaluation_result_list))
 
             return callback
@@ -416,34 +429,33 @@ def autolog(
         # adding a callback that records evaluation results.
         eval_results = []
         callbacks_index = all_arg_names.index("callbacks")
-        callback = record_eval_results(eval_results)
-        if num_pos_args >= callbacks_index + 1:
-            tmp_list = list(args)
-            tmp_list[callbacks_index] += [callback]
-            args = tuple(tmp_list)
-        elif "callbacks" in kwargs and kwargs["callbacks"] is not None:
-            kwargs["callbacks"] += [callback]
-        else:
-            kwargs["callbacks"] = [callback]
 
-        # training model
-        model = original(*args, **kwargs)
+        run_id = mlflow.active_run().info.run_id
+        with batch_metrics_logger(run_id) as metrics_logger:
+            callback = record_eval_results(eval_results, metrics_logger)
+            if num_pos_args >= callbacks_index + 1:
+                tmp_list = list(args)
+                tmp_list[callbacks_index] += [callback]
+                args = tuple(tmp_list)
+            elif "callbacks" in kwargs and kwargs["callbacks"] is not None:
+                kwargs["callbacks"] += [callback]
+            else:
+                kwargs["callbacks"] = [callback]
 
-        # logging metrics on each iteration.
-        for idx, metrics in enumerate(eval_results):
-            try_mlflow_log(mlflow.log_metrics, metrics, step=idx)
+            # training model
+            model = original(*args, **kwargs)
 
-        # If early_stopping_rounds is present, logging metrics at the best iteration
-        # as extra metrics with the max step + 1.
-        early_stopping_index = all_arg_names.index("early_stopping_rounds")
-        early_stopping = (
-            num_pos_args >= early_stopping_index + 1 or "early_stopping_rounds" in kwargs
-        )
-        if early_stopping:
-            extra_step = len(eval_results)
-            try_mlflow_log(mlflow.log_metric, "stopped_iteration", len(eval_results) - 1)
-            try_mlflow_log(mlflow.log_metric, "best_iteration", model.best_iteration)
-            try_mlflow_log(mlflow.log_metrics, eval_results[model.best_iteration], step=extra_step)
+            # If early_stopping_rounds is present, logging metrics at the best iteration
+            # as extra metrics with the max step + 1.
+            early_stopping_index = all_arg_names.index("early_stopping_rounds")
+            early_stopping = (
+                num_pos_args >= early_stopping_index + 1 or "early_stopping_rounds" in kwargs
+            )
+            if early_stopping:
+                extra_step = len(eval_results)
+                metrics_logger.record_metrics({"stopped_iteration": extra_step - 1})
+                metrics_logger.record_metrics({"best_iteration": model.best_iteration})
+                metrics_logger.record_metrics(eval_results[model.best_iteration], extra_step)
 
         # logging feature importance as artifacts.
         for imp_type in importance_types:
@@ -487,21 +499,24 @@ def autolog(
             model_signature = infer_signature(input_example, model_output)
             return model_signature
 
-        input_example, signature = resolve_input_example_and_signature(
-            get_input_example,
-            infer_model_signature,
-            log_input_examples,
-            log_model_signatures,
-            _logger,
-        )
+        # Only log the model if the autolog() param log_models is set to True.
+        if log_models:
+            # Will only resolve `input_example` and `signature` if `log_models` is `True`.
+            input_example, signature = resolve_input_example_and_signature(
+                get_input_example,
+                infer_model_signature,
+                log_input_examples,
+                log_model_signatures,
+                _logger,
+            )
 
-        try_mlflow_log(
-            log_model,
-            model,
-            artifact_path="model",
-            signature=signature,
-            input_example=input_example,
-        )
+            try_mlflow_log(
+                log_model,
+                model,
+                artifact_path="model",
+                signature=signature,
+                input_example=input_example,
+            )
 
         if auto_end_run:
             try_mlflow_log(mlflow.end_run)

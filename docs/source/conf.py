@@ -12,6 +12,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+from languagesections import *
 import mlflow.version
 import sys
 import os
@@ -21,8 +22,6 @@ import os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath("../.."))
 sys.path.insert(0, os.path.abspath("."))
-
-from languagesections import *
 
 
 # -- General configuration ------------------------------------------------
@@ -317,6 +316,17 @@ nitpick_ignore = [
     ("py:class", "bytes"),
     ("py:class", "bytearray"),
     ("py:class", "json.encoder.JSONEncoder"),
+    # Suppress warnings that stem from type annotations for model signature
+    ("py:class", "numpy.dtype"),
+    ("py:class", "numpy.ndarray"),
+    ("py:class", "pandas.core.series.Series"),
+    ("py:class", "pandas.core.frame.DataFrame"),
+    ("py:class", "pyspark.sql.dataframe.DataFrame"),
+    ("py:class", "mlflow.types.schema.DataType"),
+    ("py:class", "mlflow.types.schema.ColSpec"),
+    ("py:class", "mlflow.types.schema.Schema"),
+    ("py:class", "mlflow.models.model.Model"),
+    ("py:class", "mlflow.models.signature.ModelSignature"),
 ]
 
 linkcheck_ignore = [
