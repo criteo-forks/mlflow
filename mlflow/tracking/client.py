@@ -18,6 +18,7 @@ from mlflow.exceptions import MlflowException
 from mlflow.protos.databricks_pb2 import FEATURE_DISABLED
 from mlflow.store.model_registry import SEARCH_REGISTERED_MODEL_MAX_RESULTS_DEFAULT
 from mlflow.store.tracking import SEARCH_MAX_RESULTS_DEFAULT
+from mlflow.tracking.criteo_authentication import register_criteo_authenticated_rest_store
 from mlflow.tracking._model_registry.client import ModelRegistryClient
 from mlflow.tracking._model_registry import utils as registry_utils
 from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
@@ -57,6 +58,8 @@ class MlflowClient(object):
                              defaults to the service set by ``mlflow.tracking.set_registry_uri``. If
                              no such service was set, defaults to the tracking uri of the client.
         """
+        if "CRITEO_ENV" in os.environ and os.environ["CRITEO_ENV"] != "dev":
+            register_criteo_authenticated_rest_store()
         final_tracking_uri = utils._resolve_tracking_uri(tracking_uri)
         self._registry_uri = registry_utils._resolve_registry_uri(registry_uri, tracking_uri)
         self._tracking_client = TrackingServiceClient(final_tracking_uri)
