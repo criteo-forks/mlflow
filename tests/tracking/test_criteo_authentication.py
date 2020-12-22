@@ -33,14 +33,20 @@ def test_authenticated_client_put_token_in_header(jtc_patch):
                 "lifecycle_stage": "active",
             }
         },
-        status=200,
+        status=401,
     )
     jtc_patch.return_value = "my-token"
     old_store = _tracking_store_registry._registry["http"]
     register_criteo_authenticated_rest_store()
     mlflow.set_tracking_uri(get_tracking_server_uri())
-    mlflow.get_experiment("0")
-    assert responses.calls[0].request.headers["Authorization"] == "Bearer my-token"
+    # Use try/except because both requests will return a 401 (because of the mock)
+    # so the rest store will raise a RestException
+    try:
+        mlflow.get_experiment("0")
+    except Exception:
+        pass
+    # calls[1] because the second call should have the token (we refresh after the first 401)
+    assert responses.calls[1].request.headers["Authorization"] == "Bearer my-token"
     for scheme in ["http", "https"]:
         _tracking_store_registry.register(scheme, old_store)
     del os.environ[_TRACKING_TOKEN_ENV_VAR]
