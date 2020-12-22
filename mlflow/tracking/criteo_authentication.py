@@ -22,11 +22,11 @@ def get_tracking_server_uri() -> str:
 # pylint: disable=unused-argument
 def _get_authenticated_rest_store(store_uri: str, **_: Any) -> RestStore:
     def _return_token(force_refresh_token: bool = False) -> MlflowHostCreds:
-        if _TRACKING_TOKEN_ENV_VAR not in os.environ or force_refresh_token:
+        if force_refresh_token:
             token = _generate_jwt_from_kerberos().replace("Bearer ", "")
             os.environ[_TRACKING_TOKEN_ENV_VAR] = token
         return MlflowHostCreds(
-            host=get_tracking_server_uri(), token=os.environ[_TRACKING_TOKEN_ENV_VAR]
+            host=get_tracking_server_uri(), token=os.getenv(_TRACKING_TOKEN_ENV_VAR, "")
         )
 
     return RestStore(_return_token)
@@ -42,6 +42,8 @@ def _generate_jwt_from_kerberos():
     else:
         jtc_url = "https://jtc.preprod.crto.in/spnego/generate/jwt"
     jtc_request = requests.get(jtc_url, auth=auth)
+    if jtc_request.status_code != 200:
+        raise Exception("Failed to get a token from the jtc. " + jtc_request.text)
     return jtc_request.json()["jwt"]
 
 
