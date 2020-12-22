@@ -17,6 +17,7 @@ from mlflow.tracking._tracking_service.utils import (
     _tracking_store_registry,
     _TRACKING_TOKEN_ENV_VAR,
 )
+from mlflow.exceptions import RestException
 
 
 @responses.activate
@@ -43,7 +44,7 @@ def test_authenticated_client_put_token_in_header(jtc_patch):
     # so the rest store will raise a RestException
     try:
         mlflow.get_experiment("0")
-    except Exception:
+    except RestException:
         pass
     # calls[1] because the second call should have the token (we refresh after the first 401)
     assert responses.calls[1].request.headers["Authorization"] == "Bearer my-token"
