@@ -43,7 +43,7 @@ def _generate_jwt_from_kerberos():
         jtc_url = "https://jtc.preprod.crto.in/spnego/generate/jwt"
     jtc_request = requests.get(jtc_url, auth=auth)
     if jtc_request.status_code != 200:
-        raise Exception(f"Failed to get a token from the jtc. {jtc_request.text}.")
+        raise Exception("Failed to get a token from the jtc. " + jtc_request.text)
     return jtc_request.json()["jwt"]
 
 
