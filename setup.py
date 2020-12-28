@@ -94,7 +94,8 @@ setup(
     version=_check_add_criteo_environment(version),
     packages=find_packages(exclude=["tests", "tests.*"]),
     package_data={"mlflow": js_files + models_container_server_files + alembic_files},
-    install_requires=(SKINNY_REQUIREMENTS if _is_mlflow_skinny else CORE_REQUIREMENTS) + criteo_packages,
+    install_requires=(SKINNY_REQUIREMENTS if _is_mlflow_skinny else CORE_REQUIREMENTS)
+    + criteo_packages,
     extras_require={
         "extras": [
             "scikit-learn",

@@ -1112,7 +1112,13 @@ export class ExperimentView extends Component {
 }
 
 export const mapStateToProps = (state, ownProps) => {
-  const { lifecycleFilter, metricKeysList, paramKeysList, tagKeysList, modelVersionFilter } = ownProps;
+  const {
+    lifecycleFilter,
+    metricKeysList,
+    paramKeysList,
+    tagKeysList,
+    modelVersionFilter,
+  } = ownProps;
 
   // The runUuids we should serve.
   const { runInfosByUuid } = state.entities;

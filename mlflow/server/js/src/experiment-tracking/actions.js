@@ -152,8 +152,9 @@ export const searchRunsPayload = ({
       columns_to_whitelist: { columns: columnsToWhitelist },
     };
   }
-  wrapDeferred(MlflowService.searchRuns, data).then((res) => (shouldFetchParents ? fetchMissingParents(res) : res));
-}
+  wrapDeferred(MlflowService.searchRuns, data).then(
+    (res) => (shouldFetchParents ? fetchMissingParents(res) : res));
+};
 
 export const SEARCH_RUNS_API = 'SEARCH_RUNS_API';
 export const searchRunsApi = (params) => ({
