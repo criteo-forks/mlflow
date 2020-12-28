@@ -95,34 +95,6 @@ export const restoreRunApi = (runUuid, id = getUUID()) => {
   };
 };
 
-export const SEARCH_RUNS_API = 'SEARCH_RUNS_API';
-export const searchRunsApi = (
-  experimentIds,
-  filter,
-  runViewType,
-  orderBy,
-  columnsToWhitelist,
-  id = getUUID(),
-) => {
-  let data = {
-    experiment_ids: experimentIds,
-    filter: filter,
-    run_view_type: runViewType,
-    max_results: SEARCH_MAX_RESULTS,
-    order_by: orderBy,
-  };
-  if (columnsToWhitelist !== null) {
-    data = {
-      ...data,
-      columns_to_whitelist: { columns: columnsToWhitelist },
-    };
-  }
-  return {
-    type: SEARCH_RUNS_API,
-    payload: wrapDeferred(MlflowService.searchRuns, data),
-    meta: { id: id },
-  };
-};
 export const getParentRunTagName = () => 'mlflow.parentRunId';
 
 export const getParentRunIdsToFetch = (runs) => {
