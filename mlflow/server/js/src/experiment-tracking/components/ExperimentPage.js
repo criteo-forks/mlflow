@@ -64,9 +64,9 @@ export class ExperimentPage extends Component {
   loadMoreRunsRequestId = getUUID();
 
   loadData() {
-  const { experimentId } = this.props;
-  const { lifecycleFilter } = this.state;
-  const viewType = lifecycleFilterToRunViewType(lifecycleFilter);
+    const { experimentId } = this.props;
+    const { lifecycleFilter } = this.state;
+    const viewType = lifecycleFilterToRunViewType(lifecycleFilter);
     this.props.getExperimentApi(this.props.experimentId, this.getExperimentRequestId).catch((e) => {
       console.error(e);
     });
