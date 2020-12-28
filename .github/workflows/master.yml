@@ -10,6 +10,7 @@ on:
     branches:
       - master
       - branch-[0-9]+.[0-9]+
+      - criteo-master
 
 env:
   CONDA_DIR: /usr/share/miniconda
