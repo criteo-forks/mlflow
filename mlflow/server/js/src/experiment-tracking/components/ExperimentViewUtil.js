@@ -194,6 +194,7 @@ export default class ExperimentViewUtil {
     ['Run Name', 'tags.`mlflow.runName`'],
     ['Source', 'tags.`mlflow.source.name`'],
     ['Version', 'tags.`mlflow.source.git.commit`'],
+    ['Models', 'attributes.reserved_for_models'],
   ]);
 
   static MapCanonicalNameToAttribute = new Map([
@@ -202,6 +203,7 @@ export default class ExperimentViewUtil {
     ['tags.`mlflow.runName`', 'Run Name'],
     ['tags.`mlflow.source.name`', 'Source'],
     ['tags.`mlflow.source.git.commit`', 'Version'],
+    ['attributes.reserved_for_models', 'Models'],
   ]);
 
   static convertToCanonicalName(attributeName) {

@@ -832,8 +832,8 @@ export class ExperimentView extends Component {
         myLifecycleFilterInput,
         myOrderByKey,
         myOrderByAsc,
-        columnsToWhitelist,
         myModelVersionFilterInput,
+        columnsToWhitelist,
       );
     } catch (ex) {
       if (ex.errorMessage !== undefined) {
