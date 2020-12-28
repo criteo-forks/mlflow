@@ -152,7 +152,7 @@ export const searchRunsPayload = ({
       columns_to_whitelist: { columns: columnsToWhitelist },
     };
   }
-  wrapDeferred(MlflowService.searchRuns, data).then((res) =>
+  return wrapDeferred(MlflowService.searchRuns, data).then((res) =>
     shouldFetchParents ? fetchMissingParents(res) : res,
   );
 };

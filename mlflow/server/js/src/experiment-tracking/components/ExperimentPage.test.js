@@ -110,7 +110,7 @@ test('URL can encode columns to whitelist', () => {
   const wrapper = getExperimentPageMock();
   wrapper
     .instance()
-    .onSearch('key_filter', 'metric0, metric1', '', 'Active', null, true, [
+    .onSearch('key_filter', 'metric0, metric1', '', 'Active', null, null, true, [
       'metric.metric0',
       'metric.metric1',
       'metric.metric2',
@@ -120,9 +120,13 @@ test('URL can encode columns to whitelist', () => {
     params: 'key_filter',
     columnsToWhitelist: ['metric.metric0', 'metric.metric1', 'metric.metric2'],
   });
-  const searchRunsCall = searchRunsApi.mock.calls[1];
-  expect(searchRunsCall[1]).toEqual('');
-  expect(searchRunsCall[4]).toEqual(['metric.metric0', 'metric.metric1', 'metric.metric2']);
+  const searchRunsCall = searchRunsApi.mock.calls[1][0];
+  expect(searchRunsCall.filter).toEqual('');
+  expect(searchRunsCall.columnsToWhitelist).toEqual([
+    'metric.metric0',
+    'metric.metric1',
+    'metric.metric2',
+  ]);
 });
 
 test('Loading state without any URL params', () => {

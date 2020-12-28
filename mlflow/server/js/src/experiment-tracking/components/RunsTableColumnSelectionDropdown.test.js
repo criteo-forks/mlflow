@@ -17,7 +17,7 @@ describe('RunsTableColumnSelectionDropdown', () => {
       visibleTagKeyList: [],
       onCheck: jest.fn(),
       categorizedCheckedKeys: {
-        [ColumnTypes.ATTRIBUTES]: ['Start Time', 'User', 'Run Name', 'Source', 'Version'],
+        [ColumnTypes.ATTRIBUTES]: ['Start Time', 'User', 'Run Name', 'Source', 'Version', 'Models'],
         [ColumnTypes.PARAMS]: ['p1', 'p2'],
         [ColumnTypes.METRICS]: ['m1', 'm2'],
         [ColumnTypes.TAGS]: ['t1', 't2'],
@@ -116,6 +116,7 @@ describe('RunsTableColumnSelectionDropdown', () => {
       'attributes-Run Name',
       'attributes-Source',
       'attributes-Version',
+      'attributes-Models',
       'params-p1',
       'metrics-m1',
       'tags-t1',
