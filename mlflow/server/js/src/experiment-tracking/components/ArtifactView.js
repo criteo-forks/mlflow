@@ -10,7 +10,7 @@ import {
 import { ArtifactNode as ArtifactUtils, ArtifactNode } from '../utils/ArtifactUtils';
 import { decorators, Treebeard } from 'react-treebeard';
 import bytes from 'bytes';
-import RegisterModelButton from '../../model-registry/components/RegisterModelButton';
+import { RegisterModelButton } from '../../model-registry/components/RegisterModelButton';
 import ShowArtifactPage, { getSrc } from './artifact-view-components/ShowArtifactPage';
 import {
   ModelVersionStatus,
@@ -33,6 +33,7 @@ import { MLMODEL_FILE_NAME } from '../constants';
 export class ArtifactViewImpl extends Component {
   static propTypes = {
     runUuid: PropTypes.string.isRequired,
+    initialSelectedArtifactPath: PropTypes.string,
     // The root artifact node.
     artifactNode: PropTypes.instanceOf(ArtifactNode).isRequired,
     artifactRootUri: PropTypes.string.isRequired,
@@ -40,6 +41,8 @@ export class ArtifactViewImpl extends Component {
     listArtifactsApi: PropTypes.func.isRequired,
     modelVersionsBySource: PropTypes.object.isRequired,
     handleActiveNodeChange: PropTypes.func.isRequired,
+    runTags: PropTypes.object,
+    modelVersions: PropTypes.arrayOf(PropTypes.object),
   };
 
   state = {
@@ -219,6 +222,33 @@ export class ArtifactViewImpl extends Component {
     return false;
   }
 
+  componentWillMount() {
+    if (this.props.initialSelectedArtifactPath) {
+      const artifactPathParts = this.props.initialSelectedArtifactPath.split('/');
+      if (artifactPathParts) {
+        try {
+          // Check if valid artifactId was supplied in URL. If not, don't select
+          // or expand anything.
+          ArtifactUtils.findChild(this.props.artifactNode, this.props.initialSelectedArtifactPath);
+        } catch (err) {
+          console.error(err);
+          return;
+        }
+      }
+      let pathSoFar = '';
+      const toggledArtifactState = {
+        activeNodeId: this.props.initialSelectedArtifactPath,
+        toggledNodeIds: {},
+      };
+      artifactPathParts.forEach((part) => {
+        pathSoFar += part;
+        toggledArtifactState['toggledNodeIds'][pathSoFar] = true;
+        pathSoFar += '/';
+      });
+      this.setState(toggledArtifactState);
+    }
+  }
+
   componentDidUpdate(prevProps, prevState) {
     const { activeNodeId } = this.state;
     if (prevState.activeNodeId !== activeNodeId) {
@@ -252,7 +282,13 @@ export class ArtifactViewImpl extends Component {
           </div>
           <div className='artifact-right'>
             {this.state.activeNodeId ? this.renderArtifactInfo() : null}
-            <ShowArtifactPage runUuid={this.props.runUuid} path={this.state.activeNodeId} />
+            <ShowArtifactPage
+              runUuid={this.props.runUuid}
+              path={this.state.activeNodeId}
+              runTags={this.props.runTags}
+              artifactRootUri={this.props.artifactRootUri}
+              modelVersions={this.props.modelVersions}
+            />
           </div>
         </div>
       </div>
@@ -430,7 +466,7 @@ decorators.Header = ({ style, node }) => {
     : { marginRight: '5px', marginLeft: '19px' };
 
   return (
-    <div style={style.base}>
+    <div style={style.base} data-test-id='artifact-tree-node' artifact-name={node.name}>
       <div style={style.title}>
         <i className={iconClass} style={iconStyle} />
         {node.name}
