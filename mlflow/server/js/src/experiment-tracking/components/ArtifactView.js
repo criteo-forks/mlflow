@@ -53,7 +53,7 @@ export class ArtifactViewImpl extends Component {
 
   getExistingModelVersions() {
     const { modelVersionsBySource } = this.props;
-    const activeNodeRealPath = this.getActiveNodeRealPath();
+    const activeNodeRealPath = Utils.normalize(this.getActiveNodeRealPath());
     return modelVersionsBySource[activeNodeRealPath];
   }
 
@@ -301,7 +301,10 @@ const mapStateToProps = (state, ownProps) => {
   const { apis } = state;
   const artifactNode = getArtifacts(runUuid, state);
   const artifactRootUri = getArtifactRootUri(runUuid, state);
-  const modelVersionsBySource = _.groupBy(getAllModelVersions(state), 'source');
+  const modelVersionsWithNormalizedSource = _.flatMap(getAllModelVersions(state), (version) => {
+    return { ...version, source: Utils.normalize(version.source) };
+  });
+  const modelVersionsBySource = _.groupBy(modelVersionsWithNormalizedSource, 'source');
   return { artifactNode, artifactRootUri, modelVersionsBySource, apis };
 };
 
