@@ -1,6 +1,9 @@
 module.exports = ({ core, context }) => {
   const { body, user, html_url } = context.payload.pull_request;
 
+  // Criteo ... just discard
+  return;
+  
   // Skip validation on pull requests created by the automation bot
   if (user.login === "mlflow-automation") {
     console.log(
@@ -8,6 +11,7 @@ module.exports = ({ core, context }) => {
     );
     return;
   }
+  
 
   const categories = [
     "rn/feature",
