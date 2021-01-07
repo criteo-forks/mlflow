@@ -590,7 +590,7 @@ def _load_model(path, **kwargs):
         try:
             # load the model as an eager model.
             return torch.load(model_path, **kwargs)
-        except Exception:  # pylint: disable=broad-except
+        except Exception:
             # If fails, assume the model as a scripted model
             return torch.jit.load(model_path)
 
