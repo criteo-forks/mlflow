@@ -147,7 +147,7 @@ class S3ArtifactRepository(ArtifactRepository):
         s3_client.download_file(bucket, s3_full_path, local_path)
 
     def delete_artifacts(self, artifact_path=None):
-        (bucket, dest_path) = data.parse_s3_uri(self.artifact_uri)
+        (bucket, dest_path) = parse_s3_uri(self.artifact_uri)
         if artifact_path:
             dest_path = posixpath.join(dest_path, artifact_path)
 
